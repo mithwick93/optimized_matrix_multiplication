@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
- * File:   main.cpp
- * Author: Shehan
+ * File:   matrix_multiplication.cpp
+ * Authors: Shehan, Yasas
  *
  * Created on 11 June 2017, 10:35
  */
@@ -14,59 +8,123 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 using namespace std;
 
+void get_timings(int algo_type, char* msg);
+void free_matrix(double** matrix);
+double run_experiment(int algo_type);
 double get_random_number();
 double** initialize_matrix(bool random);
 double** matrix_multiply(double** A, double** B, double** C);
 double** matrix_multiply_parellel(double** A, double** B, double** C);
 
 int n; // size of matrix 
+int sample_size = 10; // Test sample size
 
 /*
- * 
+ * Matrix multiplication program
  */
 int main(int argc, char** argv) {
-    srand(static_cast<unsigned> (time(0)));
-
+    printf("Testing for sample size: %d\n\n", sample_size);
+    
     for (int matrix_size = 200; matrix_size <= 2000; matrix_size += 200) {
-        double start, finish, elapsed;
         n = matrix_size;
-        printf("Matrix size : %d\n", matrix_size);
+        printf("Matrix size : %d\n--------------------\n", matrix_size);
         fflush(stdout);
 
-        double** A = initialize_matrix(true);
-        double** B = initialize_matrix(true);
-        double** C = initialize_matrix(false);
-        double** D = initialize_matrix(false);
+        // serial
+        get_timings(1, (char*) "Serial");
 
-        // serial execution
-        start = clock();
-        C = matrix_multiply(A, B, C);
-        finish = clock();
+        // parallel
+        get_timings(2, (char*) "Parallel");
 
-        elapsed = (finish - start) / CLOCKS_PER_SEC;
-        printf("Normal multiplication time : %f s", elapsed);
-        fflush(stdout);
-        
         printf("\n");
-        fflush(stdout);
-
-        // parallel execution
-        start = clock();
-        D = matrix_multiply_parellel(A, B, D);
-        finish = clock();
-
-        elapsed = (finish - start) / CLOCKS_PER_SEC;
-        printf("OpenMP multiplication time : %f s", elapsed);
-        fflush(stdout);
-
-        printf("\n\n");
         fflush(stdout);
     }
 
     return 0;
+}
+
+/**
+ * Calculate time, standard deviation and sample size
+ * @param algo_type algorithm to check
+ * @param msg message to display
+ */
+void get_timings(int algo_type, char* msg) {
+    double total_time = 0.0;
+    double execution_times[sample_size];
+
+    // calculate average execution time
+    for (int i = 0; i < sample_size; i++) {
+        double elapsed_time = run_experiment(algo_type);
+        execution_times[i] = elapsed_time;
+        total_time += elapsed_time;
+    }
+
+    double average_time = total_time / sample_size;
+    printf("%s time : %.4f seconds\n", msg, average_time);
+    fflush(stdout);
+
+    if (sample_size > 1) {
+        double variance = 0.0;
+
+        // calculate standard deviation
+        for (int i = 0; i < sample_size; i++) {
+            variance += pow(execution_times[i] - average_time, 2);
+        }
+
+        double standard_deviation = sqrt(variance / (sample_size - 1));
+        printf("%s deviation = %.4f seconds\n", msg, standard_deviation);
+        fflush(stdout);
+
+        // calculate sample size
+        double samples =
+                pow((100 * 1.96 * standard_deviation) / (5 * average_time), 2);
+        printf("Samples required: %.4f\n\n", samples);
+        fflush(stdout);
+    }
+}
+
+/**
+ * Run experiment using specified algorithm
+ * @param algo_type type of algorithm to use
+ * @return elapsed time
+ */
+double run_experiment(int algo_type) {
+    srand(static_cast<unsigned> (time(0)));
+    double start, finish, elapsed;
+
+    // initialise matrixes
+    double** A = initialize_matrix(true);
+    double** B = initialize_matrix(true);
+    double** C = initialize_matrix(false);
+
+    start = clock();
+    C = algo_type == 1 ? matrix_multiply(A, B, C) : matrix_multiply_parellel(A, B, C);
+    finish = clock();
+
+    // calculate elapsed time
+    elapsed = (finish - start) / CLOCKS_PER_SEC;
+
+    // free matrix memory
+    free_matrix(A);
+    free_matrix(B);
+    free_matrix(C);
+
+    return elapsed;
+}
+
+/**
+ * Clear matrix memory
+ * @param matrix matrix to free
+ */
+void free_matrix(double** matrix) {
+    for (int i = 0; i < n; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
 }
 
 /**
@@ -100,7 +158,7 @@ double** initialize_matrix(bool random) {
 }
 
 /**
- * Multiply matrix A and B 
+ * Serial multiply matrix A and B 
  * @param A matrix A
  * @param B matrix B
  * @param C matrix C
@@ -118,6 +176,13 @@ double** matrix_multiply(double** A, double** B, double** C) {
     return C;
 }
 
+/**
+ * Parallel multiply matrix A and B 
+ * @param A matrix A
+ * @param B matrix B
+ * @param C matrix C
+ * @return matrix C = A*B
+ */
 double** matrix_multiply_parellel(double** A, double** B, double** C) {
     int row, column, itr;
     // declare shared and private variables for OpenMP threads
