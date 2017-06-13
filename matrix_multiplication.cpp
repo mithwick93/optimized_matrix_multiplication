@@ -12,23 +12,23 @@
 
 using namespace std;
 
-void get_timings(int algo_type, char* msg);
-void free_matrix(double** matrix);
-double run_experiment(int algo_type);
-double get_random_number();
-double** initialize_matrix(bool random);
-double** matrix_multiply(double** A, double** B, double** C);
-double** matrix_multiply_parellel(double** A, double** B, double** C);
+static void get_timings(int algo_type, char* msg);
+static void free_matrix(double** matrix);
+static double run_experiment(int algo_type);
+static double get_random_number();
+static double** initialize_matrix(bool random);
+static double** matrix_multiply(double** A, double** B, double** C);
+static double** matrix_multiply_parellel(double** A, double** B, double** C);
 
-int n; // size of matrix 
-int sample_size = 10; // Test sample size
+static int n; // size of matrix 
+static int sample_size = 10; // test sample size
 
 /*
  * Matrix multiplication program
  */
 int main(int argc, char** argv) {
     printf("Testing for sample size: %d\n\n", sample_size);
-    
+
     for (int matrix_size = 200; matrix_size <= 2000; matrix_size += 200) {
         n = matrix_size;
         printf("Matrix size : %d\n--------------------\n", matrix_size);
