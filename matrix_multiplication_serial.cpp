@@ -1,16 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   matrix_multiplication_serial.cpp
- * Author: Shehan
- *
- * Created on 13 June 2017, 14:23
- */
-
 #include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,8 +8,8 @@ using namespace std;
 
 static void get_timings();
 static void free_matrix(double** matrix);
-static double run_experiment();
 static double get_random_number();
+static double run_experiment();
 static double** initialize_matrix(bool random);
 static double** matrix_multiply(double** A, double** B, double** C);
 
@@ -34,7 +21,7 @@ static int sample_size; // test sample size
  * @param program_name
  */
 static void program_help(char *program_name) {
-    fprintf(stderr, "usage: %s <sample_size> <matrix_size>\n", program_name);
+    fprintf(stderr, "usage: %s <matrix_size> <sample_size>\n", program_name);
     exit(0);
 }
 
@@ -48,8 +35,8 @@ static void initialize(int argc, char *argv[]) {
         program_help(argv[0]);
     }
 
-    sscanf(argv[1], "%d", &sample_size);
-    sscanf(argv[2], "%d", &n);
+    sscanf(argv[1], "%d", &n);
+    sscanf(argv[2], "%d", &sample_size);
 
     if (sample_size <= 0 || n <= 0 || n > 2000) {
         program_help(argv[0]);
@@ -61,7 +48,10 @@ static void initialize(int argc, char *argv[]) {
  */
 int main(int argc, char *argv[]) {
     initialize(argc, argv);
-    printf("Matrix size : %d | Sample size : %d\n--------------------\n", n,sample_size);
+    printf(
+            "Matrix size : %d | Sample size : %d\n----------------------------------------\n",
+            n, sample_size
+            );
 
     // serial
     get_timings();
@@ -88,7 +78,7 @@ void get_timings() {
     }
 
     double average_time = total_time / sample_size;
-    printf("Serial time : %.4f seconds\n", average_time);
+    printf("Serial run time : %.4f seconds\n", average_time);
 }
 
 /**
