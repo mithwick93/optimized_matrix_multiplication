@@ -202,4 +202,3 @@ double** matrix_multiply_parellel(double** A, double** B, double** C) {
 
     return C;
 }
-
