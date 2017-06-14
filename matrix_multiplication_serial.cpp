@@ -12,9 +12,9 @@
  */
 
 #include <cstdlib>
-#include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include <time.h>
 
 using namespace std;
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
     get_timings();
     printf("\n");
 
+    system("pause");
     return 0;
 }
 

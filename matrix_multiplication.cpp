@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include <time.h>
 #include <math.h>
 
@@ -43,7 +44,7 @@ int main(int argc, char** argv) {
         printf("\n");
         fflush(stdout);
     }
-
+    system("pause");
     return 0;
 }
 
