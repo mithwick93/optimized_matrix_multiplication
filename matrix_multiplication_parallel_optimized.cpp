@@ -20,6 +20,8 @@ static double **matrix_multiply_parellel(double **A, double **B, double **C);
 
 static double **matrix_multiply_parellel_optimized(double **A, double **B, double **C);
 
+static double **matrix_multiply_parellel_optimized_block(double **A, double **B, double **C);
+
 static double **matrix_transpose(double **A);
 
 bool matrix_equals(double **A, double **B);
@@ -107,12 +109,12 @@ double run_experiment() {
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parellel_optimized(A, B, C);
+    C = matrix_multiply_parellel_optimized_block(A, B, C);
     finish = clock();
 
     // Validate the calculation
     double **D = initialize_matrix(false);
-    D = matrix_multiply_parellel(A, B, D);
+    D = matrix_multiply_parellel_optimized(A, B, D);
 
     if (!matrix_equals(C, D)) {
         cout << "Incorrect matrix multiplication!" << endl;
@@ -171,6 +173,42 @@ double **initialize_matrix(bool random) {
     }
 
     return matrix;
+}
+
+/**
+ * Optimized parallel multiply matrix A and B
+ * @param A matrix A
+ * @param B matrix B
+ * @param C matrix C
+ * @return matrix C = A*B
+ */
+double **matrix_multiply_parellel_optimized_block(double **A, double **B, double **C) {
+    int row, column, iter;
+    int block_column = 0, block_iter = 0;
+    int block_size = n / 2;
+    for (block_iter = 0; block_iter < n; block_iter += block_size) {
+        for (block_column = 0; block_column < n; block_column += block_size) {
+            // declare shared and private variables for OpenMP threads
+#pragma omp parallel shared(A, B, C, block_column, block_iter, block_size) private(row, column, iter)
+            {
+                // Static allocation of data to threads
+#pragma omp for schedule(static)
+                for (row = 0; row < n; ++row) {
+                    double *row_A = A[row];
+                    double *row_C = C[row];
+                    for (iter = block_iter; iter < block_iter + block_size; ++iter) {
+                        double *row_B = B[iter];
+                        double val_A = row_A[iter];
+                        for (column = block_column;  column < block_column + block_size; ++column) {
+                            row_C[column] += val_A * row_B[column];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return C;
 }
 
 /**
