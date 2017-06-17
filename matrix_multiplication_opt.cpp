@@ -167,19 +167,24 @@ double **initialize_matrix(bool random) {
  */
 double **matrix_multiply_parellel_optimized(double **A, double **B, double **C) {
     int row, column, itr;
+    double *row_A, *row_C, *row_B;
+    double val_A;
     // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C) private(row, column, itr)
+#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A)
     {
         // Static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
-            double *row_A = A[row];
-            double *row_C = C[row];
+            row_A = A[row];
+            row_C = C[row];
             for (itr = 0; itr < n; itr++) {
-                double *itr_B = B[itr];
-                double itr_row_A = row_A[itr];
+                row_B = B[itr];
+                val_A = row_A[itr];
+                // For each column of the selected row above
+                //     Add the product of the values of corresponding row element of A
+                //     with corresponding column element of B to corresponding row, column of C
                 for (column = 0; column < n; column++) {
-                    row_C[column] += itr_row_A * itr_B[column];
+                    row_C[column] += val_A * row_B[column];
                 }
             }
         }
