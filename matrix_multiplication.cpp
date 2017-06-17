@@ -1,25 +1,25 @@
-/* 
- * File:   matrix_multiplication.cpp
- * Authors: Shehan, Yasas
- *
- * Created on 11 June 2017, 10:35
- */
 #include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 #include <time.h>
 #include <math.h>
 
 using namespace std;
 
 static void get_timings(int algo_type, char* msg);
+
 static void free_matrix(double** matrix);
+
 static double run_experiment(int algo_type);
+
 static double get_random_number();
+
 static double** initialize_matrix(bool random);
+
 static double** matrix_multiply(double** A, double** B, double** C);
+
 static double** matrix_multiply_parellel(double** A, double** B, double** C);
+
 
 static int n; // size of matrix 
 static int sample_size = 25; // test sample size
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
         printf("\n");
         fflush(stdout);
     }
-    system("pause");
+
     return 0;
 }
 

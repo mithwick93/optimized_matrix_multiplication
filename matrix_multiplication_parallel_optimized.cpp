@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <stdio.h>
-#include <iostream>
+#include <stdlib.h>
 #include <time.h>
 #include <math.h>
 
@@ -70,7 +70,6 @@ int main(int argc, char *argv[]) {
     get_timings();
     printf("\n");
 
-//    system("pause");
     return 0;
 }
 
@@ -81,17 +80,14 @@ int main(int argc, char *argv[]) {
  */
 void get_timings() {
     double total_time = 0.0;
-    double execution_times[sample_size];
 
     // calculate average execution time
     for (int i = 0; i < sample_size; i++) {
-        double elapsed_time = run_experiment();
-        execution_times[i] = elapsed_time;
-        total_time += elapsed_time;
+        total_time += run_experiment();
     }
 
     double average_time = total_time / sample_size;
-    printf("Optimized Parallel run time : %.4f seconds\n", average_time);
+    printf("Optimised Parallel run time : %.4f seconds\n", average_time);
 }
 
 /**

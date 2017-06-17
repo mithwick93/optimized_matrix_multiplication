@@ -1,13 +1,6 @@
-/* 
- * File:   matrix_multiplication.cpp
- * Authors: Shehan, Yasas
- *
- * Created on 11 June 2017, 10:35
- */
 #include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 #include <time.h>
 #include <math.h>
 
@@ -39,13 +32,13 @@ int main(int argc, char **argv) {
         printf("Matrix size : %d\n--------------------\n", matrix_size);
         fflush(stdout);
 
-        // Optimized Parallel
-        get_timings((char *) "Optimized Parallel");
+        // optimised parallel
+        get_timings((char *) "Optimised Parallel");
 
         printf("\n");
         fflush(stdout);
     }
-//    system("pause");
+
     return 0;
 }
 
@@ -89,7 +82,7 @@ void get_timings(char *msg) {
 }
 
 /**
- * Run experiment using optimized parellel algo
+ * Run experiment using optimised parallel algorithm
  * and determine time
  * @return elapsed time
  */
@@ -159,7 +152,7 @@ double **initialize_matrix(bool random) {
 }
 
 /**
- * Optimized parallel multiply matrix A and B
+ * Optimised parallel multiply matrix A and B
  * @param A matrix A
  * @param B matrix B
  * @param C matrix C

@@ -6,10 +6,15 @@
 using namespace std;
 
 static void get_timings();
+
 static void free_matrix(double** matrix);
+
 static double get_random_number();
+
 static double run_experiment();
+
 static double** initialize_matrix(bool random);
+
 static double** matrix_multiply(double** A, double** B, double** C);
 
 static int n; // size of matrix 
