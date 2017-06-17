@@ -26,7 +26,7 @@ static double **matrix_transpose(double **A);
 
 bool matrix_equals(double **A, double **B);
 
-static int n; // size of matrix 
+static int n; // size of matrix
 static int sample_size; // test sample size
 
 /**
@@ -109,18 +109,18 @@ double run_experiment() {
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parellel_optimized_block(A, B, C);
+    C = matrix_multiply_parellel_optimized(A, B, C);
     finish = clock();
 
     // Validate the calculation
-    double **D = initialize_matrix(false);
-    D = matrix_multiply_parellel_optimized(A, B, D);
-
-    if (!matrix_equals(C, D)) {
-        cout << "Incorrect matrix multiplication!" << endl;
-    }
-
-    free_matrix(D);
+//    double **D = initialize_matrix(false);
+//    D = matrix_multiply_parellel_optimized(A, B, D);
+//
+//    if (!matrix_equals(C, D)) {
+//        cout << "Incorrect matrix multiplication!" << endl;
+//    }
+//
+//    free_matrix(D);
     // Validation finalized
 
     // calculate elapsed time
@@ -154,7 +154,7 @@ double get_random_number() {
 }
 
 /**
- * Initialise matrix 
+ * Initialise matrix
  * @param random fill elements randomly
  * @return initialised matrix
  */
@@ -165,7 +165,7 @@ double **initialize_matrix(bool random) {
     for (int i = 0; i < n; i++)
         matrix[i] = (double *) malloc(n * sizeof(double));
 
-    // initialise matrix elements 
+    // initialise matrix elements
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
             matrix[row][column] = random ? get_random_number() : 0.0;
@@ -185,7 +185,7 @@ double **initialize_matrix(bool random) {
 double **matrix_multiply_parellel_optimized_block(double **A, double **B, double **C) {
     int row, column, iter;
     int block_column = 0, block_iter = 0;
-    int block_size = n / 2;
+    int block_size = 25;
     for (block_iter = 0; block_iter < n; block_iter += block_size) {
         for (block_column = 0; block_column < n; block_column += block_size) {
             // declare shared and private variables for OpenMP threads
@@ -199,7 +199,8 @@ double **matrix_multiply_parellel_optimized_block(double **A, double **B, double
                     for (iter = block_iter; iter < block_iter + block_size; ++iter) {
                         double *row_B = B[iter];
                         double val_A = row_A[iter];
-                        for (column = block_column;  column < block_column + block_size; ++column) {
+                        for (column = block_column; column < block_column + block_size; ++column) {
+//                            C[row][column] += A[row][iter] * B[iter][column];
                             row_C[column] += val_A * row_B[column];
                         }
                     }
@@ -220,17 +221,19 @@ double **matrix_multiply_parellel_optimized_block(double **A, double **B, double
  */
 double **matrix_multiply_parellel_optimized(double **A, double **B, double **C) {
     int row, column, itr;
+    double *row_A, *row_C, *row_B;
+    double val_A;
     // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C) private(row, column, itr)
+#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A)
     {
         // Static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
-            double *row_A = A[row];
-            double *row_C = C[row];
+            row_A = A[row];
+            row_C = C[row];
             for (itr = 0; itr < n; itr++) {
-                double *row_B = B[itr];
-                double val_A = row_A[itr];
+                row_B = B[itr];
+                val_A = row_A[itr];
                 // For each column of the selected row above
                 //     Add the product of the values of corresponding row element of A
                 //     with corresponding column element of B to corresponding row, column of C
