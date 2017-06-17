@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 #include <time.h>
 
 using namespace std;
@@ -48,16 +47,12 @@ static void initialize(int argc, char *argv[]) {
  */
 int main(int argc, char *argv[]) {
     initialize(argc, argv);
-        printf(
-            "Matrix size : %d | Sample size : %d\n----------------------------------------\n",
-            n, sample_size
-            );
+        printf("Matrix size : %d | Sample size : %d\n----------------------------------------\n",n, sample_size);
 
     // parallel
     get_timings();
     printf("\n");
 
-    system("pause");
     return 0;
 }
 
@@ -68,13 +63,10 @@ int main(int argc, char *argv[]) {
  */
 void get_timings() {
     double total_time = 0.0;
-    double execution_times[sample_size];
 
     // calculate average execution time
     for (int i = 0; i < sample_size; i++) {
-        double elapsed_time = run_experiment();
-        execution_times[i] = elapsed_time;
-        total_time += elapsed_time;
+        total_time += run_experiment();
     }
 
     double average_time = total_time / sample_size;
