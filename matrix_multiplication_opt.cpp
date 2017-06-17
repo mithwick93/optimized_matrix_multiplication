@@ -26,7 +26,7 @@ static double **initialize_matrix(bool random);
 static double **matrix_multiply_parellel_optimized(double **A, double **B, double **C);
 
 static int n; // size of matrix 
-static int sample_size = 25; // test sample size
+static int sample_size = 200; // test sample size
 
 /*
  * Matrix multiplication program
