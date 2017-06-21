@@ -41,3 +41,7 @@ nbdist/
 
 Makefile
 .dep.inc
+
+CMakeLists.txt
+cmake-build-debug/
+.idea/

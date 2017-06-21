@@ -22,7 +22,7 @@ static double** matrix_multiply_parellel(double** A, double** B, double** C);
 
 
 static int n; // size of matrix 
-static int sample_size = 25; // test sample size
+static int sample_size = 100; // test sample size
 
 /*
  * Matrix multiplication program
