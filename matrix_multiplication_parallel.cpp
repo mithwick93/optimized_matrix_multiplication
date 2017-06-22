@@ -7,15 +7,15 @@ using namespace std;
 
 static void get_timings();
 
-static void free_matrix(double** matrix);
+static void free_matrix(double **matrix);
 
 static double get_random_number();
 
 static double run_experiment();
 
-static double** initialize_matrix(bool random);
+static double **initialize_matrix(bool random);
 
-static double** matrix_multiply_parellel(double** A, double** B, double** C);
+static double **matrix_multiply_parellel(double **A, double **B, double **C);
 
 static int n; // size of matrix 
 static int sample_size; // test sample size
@@ -52,7 +52,7 @@ static void initialize(int argc, char *argv[]) {
  */
 int main(int argc, char *argv[]) {
     initialize(argc, argv);
-        printf("Matrix size : %d | Sample size : %d\n----------------------------------------\n",n, sample_size);
+    printf("Matrix size : %d | Sample size : %d\n----------------------------------------\n", n, sample_size);
 
     // parallel
     get_timings();
@@ -88,9 +88,9 @@ double run_experiment() {
     double start, finish, elapsed;
 
     // initialise matrixes
-    double** A = initialize_matrix(true);
-    double** B = initialize_matrix(true);
-    double** C = initialize_matrix(false);
+    double **A = initialize_matrix(true);
+    double **B = initialize_matrix(true);
+    double **C = initialize_matrix(false);
 
     start = clock();
     C = matrix_multiply_parellel(A, B, C);
@@ -111,7 +111,7 @@ double run_experiment() {
  * Clear matrix memory
  * @param matrix matrix to free
  */
-void free_matrix(double** matrix) {
+void free_matrix(double **matrix) {
     for (int i = 0; i < n; i++) {
         free(matrix[i]);
     }
@@ -131,12 +131,12 @@ double get_random_number() {
  * @param random fill elements randomly
  * @return initialised matrix
  */
-double** initialize_matrix(bool random) {
+double **initialize_matrix(bool random) {
     // allocate memory for n*n matrix
-    double** matrix;
-    matrix = (double**) malloc(n * sizeof (double*));
+    double **matrix;
+    matrix = (double **) malloc(n * sizeof(double *));
     for (int i = 0; i < n; i++)
-        matrix[i] = (double*) malloc(n * sizeof (double));
+        matrix[i] = (double *) malloc(n * sizeof(double));
 
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
@@ -155,10 +155,10 @@ double** initialize_matrix(bool random) {
  * @param C matrix C
  * @return matrix C = A*B
  */
-double** matrix_multiply_parellel(double** A, double** B, double** C) {
+double **matrix_multiply_parellel(double **A, double **B, double **C) {
     int row, column, itr;
     // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A,B,C) private(row,column,itr) 
+#pragma omp parallel shared(A, B, C) private(row, column, itr)
     {
         // Static allocation of data to threads
 #pragma omp for schedule(static)

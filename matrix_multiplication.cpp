@@ -6,19 +6,19 @@
 
 using namespace std;
 
-static void get_timings(int algo_type, char* msg);
+static void get_timings(int algo_type, char *msg);
 
-static void free_matrix(double** matrix);
+static void free_matrix(double **matrix);
 
 static double run_experiment(int algo_type);
 
 static double get_random_number();
 
-static double** initialize_matrix(bool random);
+static double **initialize_matrix(bool random);
 
-static double** matrix_multiply(double** A, double** B, double** C);
+static double **matrix_multiply(double **A, double **B, double **C);
 
-static double** matrix_multiply_parellel(double** A, double** B, double** C);
+static double **matrix_multiply_parellel(double **A, double **B, double **C);
 
 
 static int n; // size of matrix 
@@ -27,7 +27,7 @@ static int sample_size = 100; // test sample size
 /*
  * Matrix multiplication program
  */
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     printf("Testing for sample size: %d\n\n", sample_size);
 
     for (int matrix_size = 200; matrix_size <= 2000; matrix_size += 200) {
@@ -36,10 +36,10 @@ int main(int argc, char** argv) {
         fflush(stdout);
 
         // serial
-        get_timings(1, (char*) "Serial");
+        get_timings(1, (char *) "Serial");
 
         // parallel
-        get_timings(2, (char*) "Parallel");
+        get_timings(2, (char *) "Parallel");
 
         printf("\n");
         fflush(stdout);
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
  * @param algo_type algorithm to check
  * @param msg message to display
  */
-void get_timings(int algo_type, char* msg) {
+void get_timings(int algo_type, char *msg) {
     double total_time = 0.0;
     double execution_times[sample_size];
 
@@ -98,9 +98,9 @@ double run_experiment(int algo_type) {
     double start, finish, elapsed;
 
     // initialise matrixes
-    double** A = initialize_matrix(true);
-    double** B = initialize_matrix(true);
-    double** C = initialize_matrix(false);
+    double **A = initialize_matrix(true);
+    double **B = initialize_matrix(true);
+    double **C = initialize_matrix(false);
 
     start = clock();
     C = algo_type == 1 ? matrix_multiply(A, B, C) : matrix_multiply_parellel(A, B, C);
@@ -121,7 +121,7 @@ double run_experiment(int algo_type) {
  * Clear matrix memory
  * @param matrix matrix to free
  */
-void free_matrix(double** matrix) {
+void free_matrix(double **matrix) {
     for (int i = 0; i < n; i++) {
         free(matrix[i]);
     }
@@ -141,12 +141,12 @@ double get_random_number() {
  * @param random fill elements randomly
  * @return initialised matrix
  */
-double** initialize_matrix(bool random) {
+double **initialize_matrix(bool random) {
     // allocate memory for n*n matrix
-    double** matrix;
-    matrix = (double**) malloc(n * sizeof (double*));
+    double **matrix;
+    matrix = (double **) malloc(n * sizeof(double *));
     for (int i = 0; i < n; i++)
-        matrix[i] = (double*) malloc(n * sizeof (double));
+        matrix[i] = (double *) malloc(n * sizeof(double));
 
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
@@ -165,7 +165,7 @@ double** initialize_matrix(bool random) {
  * @param C matrix C
  * @return matrix C = A*B
  */
-double** matrix_multiply(double** A, double** B, double** C) {
+double **matrix_multiply(double **A, double **B, double **C) {
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
             for (int itr = 0; itr < n; itr++) {
@@ -184,10 +184,10 @@ double** matrix_multiply(double** A, double** B, double** C) {
  * @param C matrix C
  * @return matrix C = A*B
  */
-double** matrix_multiply_parellel(double** A, double** B, double** C) {
+double **matrix_multiply_parellel(double **A, double **B, double **C) {
     int row, column, itr;
     // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A,B,C) private(row,column,itr) 
+#pragma omp parallel shared(A, B, C) private(row, column, itr)
     {
         // Static allocation of data to threads
 #pragma omp for schedule(static)

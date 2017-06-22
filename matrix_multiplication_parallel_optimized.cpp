@@ -22,17 +22,13 @@ static double run_experiment();
 
 static double **initialize_matrix(bool random);
 
-static double **matrix_multiply_parellel(double **A, double **B, double **C);
-
 static double **matrix_multiply_parellel_optimized(double **A, double **B, double **C);
-
-static double **matrix_multiply_parellel_optimized_block(double **A, double **B, double **C);
 
 static double **matrix_multiply_parellel_inst(double **A, double **B, double **C);
 
 static double **matrix_transpose(double **A);
 
-bool matrix_equals(double **A, double **B);
+static bool matrix_equals(double **A, double **B);
 
 static int n; // size of matrix
 static int sample_size; // test sample size
@@ -181,74 +177,63 @@ double **initialize_matrix(bool random) {
 
 /**
  * Optimized parallel multiply matrix A and B
+ *
  * @param A matrix A
  * @param B matrix B
  * @param C matrix C
  * @return matrix C = A*B
  */
 double **matrix_multiply_parellel_inst(double **A, double **B, double **C) {
-    int row, column, itr, k;
-    double *row_A, *row_C, *row_B;
-    double val_A[8];
-
-    __m256d reg1, reg2, reg3;
-    // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A, reg1, reg2, reg3, k)
-    {
-        // Static allocation of data to threads
-#pragma omp for schedule(static)
-        for (row = 0; row < n; row++) {
-            row_A = A[row];
-            row_C = C[row];
-            for (itr = 0; itr < n; itr++) {
-                row_B = B[itr];
-                for (k = 0; k < 4; k++)
-                    val_A[k] = row_A[itr];
-
-                reg1 = _mm256_loadu_pd(val_A);
-                // For each column of the selected row above
-                //     Add the product of the values of corresponding row element of A
-                //     with corresponding column element of B to corresponding row, column of C
-                for (column = 0; column < n; column += 4) {
-                    reg3 = _mm256_loadu_pd(&row_C[column]);
-                    reg2 = _mm256_loadu_pd(&row_B[column]);
-                    reg2 = _mm256_mul_pd(reg1, reg2);
-                    reg3 = _mm256_add_pd(reg2, reg3);
-                    _mm256_storeu_pd(&row_C[column], reg3);
-                }
-            }
-        }
-    }
-    return C;
-}
-
-/**
- * Optimized parallel multiply matrix A and B
- * @param A matrix A
- * @param B matrix B
- * @param C matrix C
- * @return matrix C = A*B
- */
-double **matrix_multiply_parellel_optimized_block(double **A, double **B, double **C) {
     int row, column, itr;
-    double *row_A, *row_C, *row_B;
-    double val_A;
+    double *row_A, *row_D, *ptr, *temp;
+
+    double **D = matrix_transpose(B);
+
+    double sums[8];
+
+    __m256d ymm0, ymm1, ymm2, ymm3, ymm4,
+            ymm8, ymm9, ymm10, ymm11, ymm12;
     // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A)
+#pragma omp parallel shared(A, B, C, D) private(row, column, itr, row_A, row_D, ptr, temp, sums, ymm0, ymm1, ymm2, ymm3, ymm4, ymm8, ymm9, ymm10, ymm11, ymm12)
     {
         // Static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
-            row_A = A[row];
-            row_C = C[row];
-            for (itr = 0; itr < n; itr++) {
-                row_B = B[itr];
-                val_A = row_A[itr];
-                // For each column of the selected row above
-                //     Add the product of the values of corresponding row element of A
-                //     with corresponding column element of B to corresponding row, column of C
-                for (column = 0; column < n; column++) {
-                    row_C[column] += val_A * row_B[column];
+            row_A = &A[row][0];
+            for (column = 0; column < n; column++) {
+                row_D = &D[column][0];
+                ptr = &C[row][column];
+                for (itr = 0; itr < n; itr += 20) {
+                    temp = row_A + itr;
+                    ymm0 = _mm256_loadu_pd(temp);
+                    ymm1 = _mm256_loadu_pd(temp + 4);
+                    ymm2 = _mm256_loadu_pd(temp + 8);
+                    ymm3 = _mm256_loadu_pd(temp + 12);
+                    ymm4 = _mm256_loadu_pd(temp + 16);
+
+                    temp = row_D + itr;
+                    ymm8 = _mm256_loadu_pd(temp);
+                    ymm9 = _mm256_loadu_pd(temp + 4);
+                    ymm10 = _mm256_loadu_pd(temp + 8);
+                    ymm11 = _mm256_loadu_pd(temp + 12);
+                    ymm12 = _mm256_loadu_pd(temp + 16);
+
+                    ymm0 = _mm256_mul_pd(ymm0, ymm8);
+                    ymm1 = _mm256_mul_pd(ymm1, ymm9);
+                    ymm2 = _mm256_mul_pd(ymm2, ymm10);
+                    ymm3 = _mm256_mul_pd(ymm3, ymm11);
+                    ymm4 = _mm256_mul_pd(ymm4, ymm12);
+
+                    ymm0 = _mm256_add_pd(ymm0, ymm1);
+                    ymm0 = _mm256_add_pd(ymm0, ymm2);
+                    ymm0 = _mm256_add_pd(ymm0, ymm3);
+                    ymm0 = _mm256_add_pd(ymm0, ymm4);
+
+                    _mm256_storeu_pd(sums, ymm0);
+
+                    for (int k = 0; k < 4; k++) {
+                        *ptr += sums[k];
+                    }
                 }
             }
         }
@@ -291,32 +276,6 @@ double **matrix_multiply_parellel_optimized(double **A, double **B, double **C) 
 }
 
 /**
- * Parallel multiply matrix A and B
- * @param A matrix A
- * @param B matrix B
- * @param C matrix C
- * @return matrix C = A*B
- */
-double **matrix_multiply_parellel(double **A, double **B, double **C) {
-    int row, column, itr;
-    // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C) private(row, column, itr)
-    {
-        // Static allocation of data to threads
-#pragma omp for schedule(static)
-        for (row = 0; row < n; row++) {
-            for (column = 0; column < n; column++) {
-                for (itr = 0; itr < n; itr++) {
-                    C[row][column] += A[row][itr] * B[itr][column];
-                }
-            }
-        }
-    }
-
-    return C;
-}
-
-/**
  * Gets transpose of A
  *
  * @param A
@@ -333,7 +292,7 @@ double **matrix_transpose(double **A) {
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
             for (column = 0; column < n; column++) {
-                D[row][column] += A[column][row];
+                D[row][column] = A[column][row];
             }
         }
     }
