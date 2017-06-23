@@ -28,7 +28,7 @@ static double **matrix_multiply_parellel_optimized(double **A, double **B, doubl
 static double **matrix_multiply_parellel_inst(double **A, double **B, double **C);
 
 static int n; // size of matrix 
-static int sample_size = 4000; // test sample size
+static int sample_size = 200; // test sample size
 
 /*
  * Matrix multiplication program
@@ -204,11 +204,11 @@ double **matrix_multiply_parellel_optimized(double **A, double **B, double **C) 
 double **matrix_multiply_parellel_inst(double **A, double **B, double **C) {
     int row, column, itr, k;
     double *row_A, *row_C, *row_B;
-    double val_A[8];
+    double val_A, arr_A[8];
 
     __m256d reg1, reg2, reg3;
     // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A, reg1, reg2, reg3, k)
+#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A, arr_A, reg1, reg2, reg3, k)
     {
         // Static allocation of data to threads
 #pragma omp for schedule(static)
@@ -217,10 +217,11 @@ double **matrix_multiply_parellel_inst(double **A, double **B, double **C) {
             row_C = C[row];
             for (itr = 0; itr < n; itr++) {
                 row_B = B[itr];
+                val_A = row_A[itr];
                 for (k = 0; k < 4; k++)
-                    val_A[k] = row_A[itr];
+                    arr_A[k] = val_A;
 
-                reg1 = _mm256_loadu_pd(val_A);
+                reg1 = _mm256_loadu_pd(arr_A);
                 // For each column of the selected row above
                 //     Add the product of the values of corresponding row element of A
                 //     with corresponding column element of B to corresponding row, column of C
