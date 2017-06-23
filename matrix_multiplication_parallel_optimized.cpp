@@ -26,6 +26,8 @@ static double **matrix_multiply_parellel_optimized(double **A, double **B, doubl
 
 static double **matrix_multiply_parellel_inst(double **A, double **B, double **C);
 
+static double **matrix_multiply_parellel_inst2(double **A, double **B, double **C);
+
 static double **matrix_transpose(double **A);
 
 static bool matrix_equals(double **A, double **B);
@@ -109,22 +111,24 @@ double run_experiment() {
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parellel_inst(A, B, C);
+    C = matrix_multiply_parellel_inst2(A, B, C);
     finish = clock();
 
     // Validate the calculation
-    double **D = initialize_matrix(false);
-    D = matrix_multiply_parellel_optimized(A, B, D);
-
-    if (!matrix_equals(C, D)) {
-        cout << "Incorrect matrix multiplication!" << endl;
-    }
-
-    free_matrix(D);
+//    double **D = initialize_matrix(false);
+//    D = matrix_multiply_parellel_optimized(A, B, D);
+//
+//    if (!matrix_equals(C, D)) {
+//        cout << "Incorrect matrix multiplication!" << endl;
+//    }
+//
+//    free_matrix(D);
     // Validation finalized
 
     // calculate elapsed time
     elapsed = (finish - start) / CLOCKS_PER_SEC;
+
+    cout << elapsed << endl;
 
     // free matrix memory
     free_matrix(A);
@@ -173,6 +177,50 @@ double **initialize_matrix(bool random) {
     }
 
     return matrix;
+}
+
+/**
+ * Optimized parallel multiply matrix A and B
+ * @param A matrix A
+ * @param B matrix B
+ * @param C matrix C
+ * @return matrix C = A*B
+ */
+double **matrix_multiply_parellel_inst2(double **A, double **B, double **C) {
+    int row, column, itr, k;
+    double *row_A, *row_C, *row_B;
+    double val_A, arr_A[8];
+
+    __m256d reg1, reg2, reg3;
+    // declare shared and private variables for OpenMP threads
+#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A, arr_A, reg1, reg2, reg3, k)
+    {
+        // Static allocation of data to threads
+#pragma omp for schedule(static)
+        for (row = 0; row < n; row++) {
+            row_A = A[row];
+            row_C = C[row];
+            for (itr = 0; itr < n; itr++) {
+                row_B = B[itr];
+                val_A = row_A[itr];
+                for (k = 0; k < 4; k++)
+                    arr_A[k] = val_A;
+
+                reg1 = _mm256_loadu_pd(arr_A);
+                // For each column of the selected row above
+                //     Add the product of the values of corresponding row element of A
+                //     with corresponding column element of B to corresponding row, column of C
+                for (column = 0; column < n; column += 4) {
+                    reg3 = _mm256_loadu_pd(&row_C[column]);
+                    reg2 = _mm256_loadu_pd(&row_B[column]);
+                    reg2 = _mm256_mul_pd(reg1, reg2);
+                    reg3 = _mm256_add_pd(reg2, reg3);
+                    _mm256_storeu_pd(&row_C[column], reg3);
+                }
+            }
+        }
+    }
+    return C;
 }
 
 /**
