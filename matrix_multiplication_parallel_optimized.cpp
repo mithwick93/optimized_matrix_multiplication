@@ -111,7 +111,7 @@ double run_experiment() {
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parellel_inst2(A, B, C);
+    C = matrix_multiply_parellel_optimized(A, B, C);
     finish = clock();
 
     // Validate the calculation
@@ -128,7 +128,7 @@ double run_experiment() {
     // calculate elapsed time
     elapsed = (finish - start) / CLOCKS_PER_SEC;
 
-    cout << elapsed << endl;
+//    cout << elapsed << endl;
 
     // free matrix memory
     free_matrix(A);
@@ -314,8 +314,13 @@ double **matrix_multiply_parellel_optimized(double **A, double **B, double **C) 
                 // For each column of the selected row above
                 //     Add the product of the values of corresponding row element of A
                 //     with corresponding column element of B to corresponding row, column of C
-                for (column = 0; column < n; column++) {
+                for (column = 0; column < n; column += 5) {
+                    // Loop unrolling
                     row_C[column] += val_A * row_B[column];
+                    row_C[column + 1] += val_A * row_B[column + 1];
+                    row_C[column + 2] += val_A * row_B[column + 2];
+                    row_C[column + 3] += val_A * row_B[column + 3];
+                    row_C[column + 4] += val_A * row_B[column + 4];
                 }
             }
         }
