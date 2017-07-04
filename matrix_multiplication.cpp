@@ -12,8 +12,6 @@ static void free_matrix(double **matrix);
 
 static double run_experiment(int algo_type);
 
-static double get_random_number();
-
 static double **initialize_matrix(bool random);
 
 static double **matrix_multiply(double **A, double **B, double **C);
@@ -22,7 +20,7 @@ static double **matrix_multiply_parellel(double **A, double **B, double **C);
 
 
 static int n; // size of matrix 
-static int sample_size = 100; // test sample size
+static int sample_size = 25; // test sample size
 
 /*
  * Matrix multiplication program
@@ -129,14 +127,6 @@ void free_matrix(double **matrix) {
 }
 
 /**
- * Generate random floating point number
- * @return random float number
- */
-double get_random_number() {
-    return static_cast<float> (rand()) / (static_cast<float> (RAND_MAX / 10000.0));
-}
-
-/**
  * Initialise matrix 
  * @param random fill elements randomly
  * @return initialised matrix
@@ -151,7 +141,7 @@ double **initialize_matrix(bool random) {
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? get_random_number() : 0.0;
+            matrix[row][column] = random ? (double)rand() : 0.0;
         }
     }
 

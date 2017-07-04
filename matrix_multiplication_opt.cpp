@@ -19,11 +19,7 @@ static void free_matrix(double **matrix);
 
 static double run_experiment();
 
-static double get_random_number();
-
 static double **initialize_matrix(bool random);
-
-static double **matrix_multiply_parellel_optimized(double **A, double **B, double **C);
 
 static double **matrix_multiply_parellel_inst(double **A, double **B, double **C);
 
@@ -131,14 +127,6 @@ void free_matrix(double **matrix) {
 }
 
 /**
- * Generate random floating point number
- * @return random float number
- */
-double get_random_number() {
-    return static_cast<float> (rand()) / (static_cast<float> (RAND_MAX / 10000.0));
-}
-
-/**
  * Initialise matrix 
  * @param random fill elements randomly
  * @return initialised matrix
@@ -153,45 +141,11 @@ double **initialize_matrix(bool random) {
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? get_random_number() : 0.0;
+            matrix[row][column] = random ? (double)rand() : 0.0;
         }
     }
 
     return matrix;
-}
-
-/**
- * Optimised parallel multiply matrix A and B
- * @param A matrix A
- * @param B matrix B
- * @param C matrix C
- * @return matrix C = A*B
- */
-double **matrix_multiply_parellel_optimized(double **A, double **B, double **C) {
-    int row, column, itr;
-    double *row_A, *row_C, *row_B;
-    double val_A;
-    // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A)
-    {
-        // Static allocation of data to threads
-#pragma omp for schedule(static)
-        for (row = 0; row < n; row++) {
-            row_A = A[row];
-            row_C = C[row];
-            for (itr = 0; itr < n; itr++) {
-                row_B = B[itr];
-                val_A = row_A[itr];
-                // For each column of the selected row above
-                //     Add the product of the values of corresponding row element of A
-                //     with corresponding column element of B to corresponding row, column of C
-                for (column = 0; column < n; column += 1) {
-                    row_C[column] += val_A * row_B[column];
-                }
-            }
-        }
-    }
-    return C;
 }
 
 /**
