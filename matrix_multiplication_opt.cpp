@@ -26,21 +26,36 @@ static double **matrix_multiply_parallel_optimized(double **A, double **B, doubl
 static double **matrix_transpose(double **A);
 
 static int n; // size of matrix 
-static int sample_size = 200; // test sample size
+static int sample_size; // test sample size
 
 /*
  * Matrix multiplication program
  */
 int main(int argc, char **argv) {
-    printf("Testing for sample size: %d\n\n", sample_size);
 
     for (int matrix_size = 200; matrix_size <= 2000; matrix_size += 200) {
         n = matrix_size;
         printf("Matrix size : %d\n--------------------\n", matrix_size);
         fflush(stdout);
 
+        // set sample sizes according to matrix size
+        switch (n) {
+            case 200:
+                sample_size = 2500;
+                break;
+            case 400:
+                sample_size = 200;
+                break;
+            case 600:
+                sample_size = 100;
+                break;
+            default:
+                sample_size = 50;
+        }
+
         // optimised parallel
         get_timings((char *) "Optimised Parallel");
+        printf("Samples provided: %d\n\n", sample_size);
 
         printf("\n");
         fflush(stdout);
@@ -83,7 +98,7 @@ void get_timings(char *msg) {
         // calculate sample size
         double samples =
                 pow((100 * 1.96 * standard_deviation) / (5 * average_time), 2);
-        printf("Samples required: %.4f\n\n", samples);
+        printf("Samples required: %.4f\n", samples);
         fflush(stdout);
     }
 }
@@ -143,7 +158,7 @@ double **initialize_matrix(bool random) {
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? (double)rand() : 0.0;
+            matrix[row][column] = random ? (double) rand() : 0.0;
         }
     }
 
