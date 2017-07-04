@@ -365,6 +365,7 @@ double **matrix_multiply_parallel_optimized_inst(double **A, double **B, double 
             }
         }
     }
+    free_matrix(D);
     return C;
 }
 

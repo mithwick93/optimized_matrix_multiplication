@@ -227,6 +227,8 @@ double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) 
             }
         }
     }
+
+    free_matrix(D);
     return C;
 }
 
