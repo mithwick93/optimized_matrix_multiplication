@@ -28,8 +28,6 @@ static double **matrix_multiply_parellel_inst2(double **A, double **B, double **
 
 static double **matrix_multiply_parellel_optimized_4x2(double **A, double **B, double **C);
 
-static double **matrix_multiply_parellel_optimized_block(double **A, double **B, double **C);
-
 static double **matrix_transpose(double **A);
 
 static bool matrix_equals(double **A, double **B);
@@ -117,14 +115,14 @@ double run_experiment() {
     finish = clock();
 
     // Validate the calculation
-//    double **D = initialize_matrix(false);
-//    D = matrix_multiply_parellel_optimized(A, B, D);
-//
-//    if (!matrix_equals(C, D)) {
-//        cout << "Incorrect matrix multiplication!" << endl;
-//    }
-//
-//    free_matrix(D);
+    double **D = initialize_matrix(false);
+    D = matrix_multiply_parellel_optimized(A, B, D);
+
+    if (!matrix_equals(C, D)) {
+        cout << "Incorrect matrix multiplication!" << endl;
+    }
+
+    free_matrix(D);
     // Validation finalized
 
     // calculate elapsed time
