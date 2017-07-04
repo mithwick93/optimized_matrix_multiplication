@@ -20,13 +20,15 @@ static double run_experiment();
 
 static double **initialize_matrix(bool random);
 
-static double **matrix_multiply_parellel_optimized(double **A, double **B, double **C);
+static double **matrix_multiply_parallel_optimized(double **A, double **B, double **C);
 
-static double **matrix_multiply_parellel_inst(double **A, double **B, double **C);
+static double **matrix_multiply_parallel_optimized_inst(double **A, double **B, double **C);
 
-static double **matrix_multiply_parellel_inst2(double **A, double **B, double **C);
+static double **matrix_multiply_parallel_optimized_inst2(double **A, double **B, double **C);
 
-static double **matrix_multiply_parellel_optimized_4x2(double **A, double **B, double **C);
+static double **matrix_multiply_parallel_optimized_2x2(double **A, double **B, double **C);
+
+static double **matrix_multiply_parallel_optimized_4x2(double **A, double **B, double **C);
 
 static double **matrix_transpose(double **A);
 
@@ -105,18 +107,18 @@ double run_experiment() {
     srand(static_cast<unsigned> (time(0)));
     double start, finish, elapsed;
 
-    // initialise matrixes
+    // initialise matrices
     double **A = initialize_matrix(true);
     double **B = initialize_matrix(true);
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parellel_inst(A, B, C);
+    C = matrix_multiply_parallel_optimized_inst(A, B, C);
     finish = clock();
 
     // Validate the calculation
     double **D = initialize_matrix(false);
-    D = matrix_multiply_parellel_optimized(A, B, D);
+    D = matrix_multiply_parallel_optimized(A, B, D);
 
     if (!matrix_equals(C, D)) {
         cout << "Incorrect matrix multiplication!" << endl;
@@ -164,7 +166,7 @@ double **initialize_matrix(bool random) {
     // initialise matrix elements
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? (double)rand() : 0.0;
+            matrix[row][column] = random ? (double) rand() : 0.0;
         }
     }
 
@@ -178,7 +180,7 @@ double **initialize_matrix(bool random) {
  * @param C matrix C
  * @return matrix C = A*B
  */
-double **matrix_multiply_parellel_optimized_4x2(double **A, double **B, double **C) {
+double **matrix_multiply_parallel_optimized_4x2(double **A, double **B, double **C) {
     int i, j, k;
     double *A_i, *B_k, *C_i, *A_i1, *A_i2, *A_i3, *C_i1, *C_i2, *C_i3;
     double A_i_k, A_i1_k, A_i2_k, A_i3_k;
@@ -226,7 +228,7 @@ double **matrix_multiply_parellel_optimized_4x2(double **A, double **B, double *
  * @param C matrix C
  * @return matrix C = A*B
  */
-double **matrix_multiply_parellel_optimized_2x2(double **A, double **B, double **C) {
+double **matrix_multiply_parallel_optimized_2x2(double **A, double **B, double **C) {
     int i, j, k;
     double *A_i, *B_k, *C_i, *A_i1, *C_i1;
     double A_i_k, A_i1_k;
@@ -263,7 +265,7 @@ double **matrix_multiply_parellel_optimized_2x2(double **A, double **B, double *
  * @param C matrix C
  * @return matrix C = A*B
  */
-double **matrix_multiply_parellel_inst2(double **A, double **B, double **C) {
+double **matrix_multiply_parallel_optimized_inst2(double **A, double **B, double **C) {
     int row, column, itr, k;
     double *row_A, *row_C, *row_B;
     double val_A, arr_A[8];
@@ -308,7 +310,7 @@ double **matrix_multiply_parellel_inst2(double **A, double **B, double **C) {
  * @param C matrix C
  * @return matrix C = A*B
  */
-double **matrix_multiply_parellel_inst(double **A, double **B, double **C) {
+double **matrix_multiply_parallel_optimized_inst(double **A, double **B, double **C) {
     int row, column, itr;
     double *row_A, *row_D, *ptr, *temp;
 
@@ -373,7 +375,7 @@ double **matrix_multiply_parellel_inst(double **A, double **B, double **C) {
  * @param C matrix C
  * @return matrix C = A*B
  */
-double **matrix_multiply_parellel_optimized(double **A, double **B, double **C) {
+double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) {
     int row, column, itr;
     double *row_A, *row_C, *row_B;
     double val_A;
