@@ -16,8 +16,6 @@ static void get_timings();
 
 static void free_matrix(double **matrix);
 
-static double get_random_number();
-
 static double run_experiment();
 
 static double **initialize_matrix(bool random);
@@ -152,14 +150,6 @@ void free_matrix(double **matrix) {
 }
 
 /**
- * Generate random floating point number
- * @return random float number
- */
-double get_random_number() {
-    return static_cast<float> (rand()) / (static_cast<float> (RAND_MAX / 10000.0));
-}
-
-/**
  * Initialise matrix
  * @param random fill elements randomly
  * @return initialised matrix
@@ -174,7 +164,7 @@ double **initialize_matrix(bool random) {
     // initialise matrix elements
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? get_random_number() : 0.0;
+            matrix[row][column] = random ? (double)rand() : 0.0;
         }
     }
 
