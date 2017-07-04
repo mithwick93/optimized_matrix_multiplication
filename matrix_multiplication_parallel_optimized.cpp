@@ -28,7 +28,9 @@ static double **matrix_multiply_parellel_inst(double **A, double **B, double **C
 
 static double **matrix_multiply_parellel_inst2(double **A, double **B, double **C);
 
-static double **matrix_multiply_parellel_optimized_2x2(double **A, double **B, double **C);
+static double **matrix_multiply_parellel_optimized_4x2(double **A, double **B, double **C);
+
+static double **matrix_multiply_parellel_optimized_block(double **A, double **B, double **C);
 
 static double **matrix_transpose(double **A);
 
@@ -113,7 +115,7 @@ double run_experiment() {
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parellel_optimized_2x2(A, B, C);
+    C = matrix_multiply_parellel_optimized_block(A, B, C);
     finish = clock();
 
     // Validate the calculation
@@ -188,6 +190,54 @@ double **initialize_matrix(bool random) {
  * @param C matrix C
  * @return matrix C = A*B
  */
+double **matrix_multiply_parellel_optimized_4x2(double **A, double **B, double **C) {
+    int i, j, k;
+    double *A_i, *B_k, *C_i, *A_i1, *A_i2, *A_i3, *C_i1, *C_i2, *C_i3;
+    double A_i_k, A_i1_k, A_i2_k, A_i3_k;
+    // declare shared and private variables for OpenMP threads
+#pragma omp parallel shared(A, B, C) private(i, j, k, A_i, B_k, C_i, A_i1, C_i1, A_i2, C_i2, A_i3, C_i3, A_i_k, A_i1_k, A_i2_k, A_i3_k)
+    {
+        // Static allocation of data to threads
+#pragma omp for schedule(static)
+        for (i = 0; i < n; i += 4) {
+            A_i = A[i];
+            A_i1 = A[i + 1];
+            A_i2 = A[i + 2];
+            A_i3 = A[i + 3];
+
+            C_i = C[i];
+            C_i1 = C[i + 1];
+            C_i2 = C[i + 2];
+            C_i3 = C[i + 3];
+            for (k = 0; k < n; k++) {
+                A_i_k = A_i[k];
+                A_i1_k = A_i1[k];
+                A_i2_k = A_i2[k];
+                A_i3_k = A_i3[k];
+                B_k = B[k];
+                for (j = 0; j < n; j += 2) {
+                    C_i[j] += A_i_k + B_k[j];
+                    C_i[j + 1] += A_i_k + B_k[j + 1];
+                    C_i1[j] += A_i1_k + B_k[j];
+                    C_i1[j + 1] += A_i1_k + B_k[j + 1];
+                    C_i2[j] += A_i2_k + B_k[j];
+                    C_i2[j + 1] += A_i2_k + B_k[j + 1];
+                    C_i3[j] += A_i3_k + B_k[j];
+                    C_i3[j + 1] += A_i3_k + B_k[j + 1];
+                }
+            }
+        }
+    }
+    return C;
+}
+
+/**
+ * Optimized parallel multiply matrix A and B
+ * @param A matrix A
+ * @param B matrix B
+ * @param C matrix C
+ * @return matrix C = A*B
+ */
 double **matrix_multiply_parellel_optimized_2x2(double **A, double **B, double **C) {
     int i, j, k;
     double *A_i, *B_k, *C_i, *A_i1, *C_i1;
@@ -197,7 +247,7 @@ double **matrix_multiply_parellel_optimized_2x2(double **A, double **B, double *
     {
         // Static allocation of data to threads
 #pragma omp for schedule(static)
-        for (i = 0; i < n; i += 2) {
+        for (i = 0; i < n; i += 4) {
             A_i = A[i];
             A_i1 = A[i + 1];
             C_i = C[i];
