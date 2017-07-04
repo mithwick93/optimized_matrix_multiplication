@@ -111,7 +111,7 @@ double run_experiment() {
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parellel_optimized_block(A, B, C);
+    C = matrix_multiply_parellel_inst(A, B, C);
     finish = clock();
 
     // Validate the calculation
