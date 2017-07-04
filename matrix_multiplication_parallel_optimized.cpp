@@ -113,7 +113,7 @@ double run_experiment() {
     double **C = initialize_matrix(false);
 
     start = clock();
-    C = matrix_multiply_parallel_optimized_inst(A, B, C);
+    C = matrix_multiply_parallel_optimized(A, B, C);
     finish = clock();
 
     // Validate the calculation
@@ -184,10 +184,10 @@ double **matrix_multiply_parallel_optimized_4x2(double **A, double **B, double *
     int i, j, k;
     double *A_i, *B_k, *C_i, *A_i1, *A_i2, *A_i3, *C_i1, *C_i2, *C_i3;
     double A_i_k, A_i1_k, A_i2_k, A_i3_k;
-    // declare shared and private variables for OpenMP threads
+// declare shared and private variables for OpenMP threads
 #pragma omp parallel shared(A, B, C) private(i, j, k, A_i, B_k, C_i, A_i1, C_i1, A_i2, C_i2, A_i3, C_i3, A_i_k, A_i1_k, A_i2_k, A_i3_k)
     {
-        // Static allocation of data to threads
+// Static allocation of data to threads
 #pragma omp for schedule(static)
         for (i = 0; i < n; i += 4) {
             A_i = A[i];
@@ -232,10 +232,10 @@ double **matrix_multiply_parallel_optimized_2x2(double **A, double **B, double *
     int i, j, k;
     double *A_i, *B_k, *C_i, *A_i1, *C_i1;
     double A_i_k, A_i1_k;
-    // declare shared and private variables for OpenMP threads
+// declare shared and private variables for OpenMP threads
 #pragma omp parallel shared(A, B, C) private(i, j, k, A_i, B_k, C_i, A_i1, C_i1, A_i_k, A_i1_k)
     {
-        // Static allocation of data to threads
+// Static allocation of data to threads
 #pragma omp for schedule(static)
         for (i = 0; i < n; i += 4) {
             A_i = A[i];
@@ -271,10 +271,10 @@ double **matrix_multiply_parallel_optimized_inst2(double **A, double **B, double
     double val_A, arr_A[8];
 
     __m256d reg1, reg2, reg3;
-    // declare shared and private variables for OpenMP threads
+// declare shared and private variables for OpenMP threads
 #pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A, arr_A, reg1, reg2, reg3, k)
     {
-        // Static allocation of data to threads
+// Static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
             row_A = A[row];
@@ -320,10 +320,10 @@ double **matrix_multiply_parallel_optimized_inst(double **A, double **B, double 
 
     __m256d ymm0, ymm1, ymm2, ymm3, ymm4,
             ymm8, ymm9, ymm10, ymm11, ymm12;
-    // declare shared and private variables for OpenMP threads
+// declare shared and private variables for OpenMP threads
 #pragma omp parallel shared(A, B, C, D) private(row, column, itr, row_A, row_D, ptr, temp, sums, ymm0, ymm1, ymm2, ymm3, ymm4, ymm8, ymm9, ymm10, ymm11, ymm12)
     {
-        // Static allocation of data to threads
+// Static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
             row_A = &A[row][0];
@@ -380,10 +380,10 @@ double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) 
     int row, column, itr;
     double *row_A, *row_C, *row_B;
     double val_A;
-    // declare shared and private variables for OpenMP threads
+// declare shared and private variables for OpenMP threads
 #pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A)
     {
-        // Static allocation of data to threads
+// Static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
             row_A = A[row];

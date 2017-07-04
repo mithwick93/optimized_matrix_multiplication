@@ -174,61 +174,33 @@ double **initialize_matrix(bool random) {
  */
 double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) {
     int row, column, itr;
-    double *row_A, *row_D, *ptr, *temp;
-
-    double **D = matrix_transpose(B);
-
-    double sums[8];
-
-    __m256d ymm0, ymm1, ymm2, ymm3, ymm4,
-            ymm8, ymm9, ymm10, ymm11, ymm12;
-    // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, B, C, D) private(row, column, itr, row_A, row_D, ptr, temp, sums, ymm0, ymm1, ymm2, ymm3, ymm4, ymm8, ymm9, ymm10, ymm11, ymm12)
+    double *row_A, *row_C, *row_B;
+    double val_A;
+// declare shared and private variables for OpenMP threads
+#pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A)
     {
-        // Static allocation of data to threads
+// Static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
-            row_A = &A[row][0];
-            for (column = 0; column < n; column++) {
-                row_D = &D[column][0];
-                ptr = &C[row][column];
-                for (itr = 0; itr < n; itr += 20) {
-                    temp = row_A + itr;
-                    ymm0 = _mm256_loadu_pd(temp);
-                    ymm1 = _mm256_loadu_pd(temp + 4);
-                    ymm2 = _mm256_loadu_pd(temp + 8);
-                    ymm3 = _mm256_loadu_pd(temp + 12);
-                    ymm4 = _mm256_loadu_pd(temp + 16);
-
-                    temp = row_D + itr;
-                    ymm8 = _mm256_loadu_pd(temp);
-                    ymm9 = _mm256_loadu_pd(temp + 4);
-                    ymm10 = _mm256_loadu_pd(temp + 8);
-                    ymm11 = _mm256_loadu_pd(temp + 12);
-                    ymm12 = _mm256_loadu_pd(temp + 16);
-
-                    ymm0 = _mm256_mul_pd(ymm0, ymm8);
-                    ymm1 = _mm256_mul_pd(ymm1, ymm9);
-                    ymm2 = _mm256_mul_pd(ymm2, ymm10);
-                    ymm3 = _mm256_mul_pd(ymm3, ymm11);
-                    ymm4 = _mm256_mul_pd(ymm4, ymm12);
-
-                    ymm0 = _mm256_add_pd(ymm0, ymm1);
-                    ymm0 = _mm256_add_pd(ymm0, ymm2);
-                    ymm0 = _mm256_add_pd(ymm0, ymm3);
-                    ymm0 = _mm256_add_pd(ymm0, ymm4);
-
-                    _mm256_storeu_pd(sums, ymm0);
-
-                    for (int k = 0; k < 4; k++) {
-                        *ptr += sums[k];
-                    }
+            row_A = A[row];
+            row_C = C[row];
+            for (itr = 0; itr < n; itr++) {
+                row_B = B[itr];
+                val_A = row_A[itr];
+                // For each column of the selected row above
+                //     Add the product of the values of corresponding row element of A
+                //     with corresponding column element of B to corresponding row, column of C
+                for (column = 0; column < n; column += 5) {
+                    // Loop unrolling
+                    row_C[column] += val_A * row_B[column];
+                    row_C[column + 1] += val_A * row_B[column + 1];
+                    row_C[column + 2] += val_A * row_B[column + 2];
+                    row_C[column + 3] += val_A * row_B[column + 3];
+                    row_C[column + 4] += val_A * row_B[column + 4];
                 }
             }
         }
     }
-
-    free_matrix(D);
     return C;
 }
 
