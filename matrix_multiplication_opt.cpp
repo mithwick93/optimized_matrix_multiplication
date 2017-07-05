@@ -23,8 +23,6 @@ static double **initialize_matrix(bool random);
 
 static double **matrix_multiply_parallel_optimized(double **A, double **B, double **C);
 
-static double **matrix_transpose(double **A);
-
 static int n; // size of matrix 
 static int sample_size; // test sample size
 
@@ -202,28 +200,4 @@ double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) 
         }
     }
     return C;
-}
-
-/**
- * Gets transpose of A
- *
- * @param A
- * @return A^T
- */
-double **matrix_transpose(double **A) {
-    // allocate memory for n*n matrix
-    double **D = initialize_matrix(false);
-    int row, column;
-    // declare shared and private variables for OpenMP threads
-#pragma omp parallel shared(A, D) private(row, column)
-    {
-        // Static allocation of data to threads
-#pragma omp for schedule(static)
-        for (row = 0; row < n; row++) {
-            for (column = 0; column < n; column++) {
-                D[row][column] = A[column][row];
-            }
-        }
-    }
-    return D;
 }

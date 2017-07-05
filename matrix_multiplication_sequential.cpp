@@ -46,13 +46,13 @@ static void initialize(int argc, char *argv[]) {
 }
 
 /*
- * Matrix multiplication serial program
+ * Matrix multiplication sequential program
  */
 int main(int argc, char *argv[]) {
     initialize(argc, argv);
     printf("Matrix size : %d | Sample size : %d\n----------------------------------------\n", n, sample_size);
 
-    // serial
+    // sequential
     get_timings();
     printf("\n");
 
@@ -60,9 +60,7 @@ int main(int argc, char *argv[]) {
 }
 
 /**
- * Calculate time, standard deviation and sample size
- * @param algo_type algorithm to check
- * @param msg message to display
+ * Calculate time duration
  */
 void get_timings() {
     double total_time = 0.0;
@@ -73,12 +71,11 @@ void get_timings() {
     }
 
     double average_time = total_time / sample_size;
-    printf("Serial run time : %.4f seconds\n", average_time);
+    printf("Sequential calculation time : %.4f seconds\n", average_time);
 }
 
 /**
- * Run experiment using specified algorithm
- * @param algo_type type of algorithm to use
+ * Run experiment
  * @return elapsed time
  */
 double run_experiment() {
@@ -139,7 +136,7 @@ double **initialize_matrix(bool random) {
 }
 
 /**
- * Serial multiply matrix A and B 
+ * Sequential multiply matrix A and B 
  * @param A matrix A
  * @param B matrix B
  * @param C matrix C
