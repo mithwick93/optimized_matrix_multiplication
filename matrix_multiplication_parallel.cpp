@@ -108,9 +108,9 @@ double run_experiment() {
  */
 void free_matrix(double **matrix) {
     for (int i = 0; i < n; i++) {
-        free(matrix[i]);
+        delete [] matrix[i];
     }
-    free(matrix);
+    delete [] matrix;
 }
 
 /**
@@ -120,10 +120,9 @@ void free_matrix(double **matrix) {
  */
 double **initialize_matrix(bool random) {
     // allocate memory for n*n matrix
-    double **matrix;
-    matrix = (double **) malloc(n * sizeof(double *));
+    double **matrix = new double*[n];
     for (int i = 0; i < n; i++)
-        matrix[i] = (double *) malloc(n * sizeof(double));
+        matrix[i] = new double[n];
 
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
