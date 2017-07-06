@@ -28,7 +28,7 @@ static void program_help(char *program_name) {
 }
 
 /**
- * Initialise program variables using arguments received
+ * Initialize program variables using arguments received
  * @param argc
  * @param argv
  */
@@ -50,7 +50,11 @@ static void initialize(int argc, char *argv[]) {
  */
 int main(int argc, char *argv[]) {
     initialize(argc, argv);
-    printf("Matrix size : %d | Sample size : %d\n----------------------------------------\n", n, sample_size);
+    printf(
+        "Matrix size : %d | Sample size : %d\n\n", 
+        n, 
+        sample_size
+    );
 
     // parallel for
     get_timings();
@@ -82,11 +86,12 @@ double run_experiment() {
     srand(static_cast<unsigned> (time(0)));
     double start, finish, elapsed;
 
-    // initialise matrixes
+    // initialize matrices
     double **A = initialize_matrix(true);
     double **B = initialize_matrix(true);
     double **C = initialize_matrix(false);
 
+    // perform matrix multiplication
     start = clock();
     C = matrix_multiply_parellel(A, B, C);
     finish = clock();
@@ -114,9 +119,9 @@ void free_matrix(double **matrix) {
 }
 
 /**
- * Initialise matrix 
+ * Initialize matrix 
  * @param random fill elements randomly
- * @return initialised matrix
+ * @return initialized matrix
  */
 double **initialize_matrix(bool random) {
     // allocate memory for n*n matrix
@@ -124,10 +129,10 @@ double **initialize_matrix(bool random) {
     for (int i = 0; i < n; i++)
         matrix[i] = new double[n];
 
-    // initialise matrix elements 
+    // initialize matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? (double)rand() : 0.0;
+            matrix[row][column] = random ? (double) rand() : 0.0;
         }
     }
 
@@ -143,10 +148,11 @@ double **initialize_matrix(bool random) {
  */
 double **matrix_multiply_parellel(double **A, double **B, double **C) {
     int row, column, itr;
+
     // declare shared and private variables for OpenMP threads
 #pragma omp parallel shared(A, B, C) private(row, column, itr)
     {
-        // Static allocation of data to threads
+        // static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
             for (column = 0; column < n; column++) {

@@ -2,13 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <math.h>
-#include <iostream>
-
-extern "C"
-{
-#include <immintrin.h>
-}
 
 using namespace std;
 
@@ -35,7 +28,7 @@ static void program_help(char *program_name) {
 }
 
 /**
- * Initialise program variables using arguments received
+ * Initialize program variables using arguments received
  * @param argc
  * @param argv
  */
@@ -53,16 +46,17 @@ static void initialize(int argc, char *argv[]) {
 }
 
 /*
- * Matrix multiplication parallel program
+ * Matrix multiplication optimized parallel for program
  */
 int main(int argc, char *argv[]) {
     initialize(argc, argv);
     printf(
-            "Matrix size : %d | Sample size : %d\n----------------------------------------\n",
-            n, sample_size
+        "Matrix size : %d | Sample size : %d\n\n", 
+        n, 
+        sample_size
     );
 
-    // parallel
+    // optimized parallel for
     get_timings();
     printf("\n");
 
@@ -70,9 +64,7 @@ int main(int argc, char *argv[]) {
 }
 
 /**
- * Calculate time, standard deviation and sample size
- * @param algo_type algorithm to check
- * @param msg message to display
+ * Calculate time duration
  */
 void get_timings() {
     double total_time = 0.0;
@@ -83,23 +75,23 @@ void get_timings() {
     }
 
     double average_time = total_time / sample_size;
-    printf("Optimised Parallel run time : %.4f seconds\n", average_time);
+    printf("Optimized parallel for calculation time : %.4f seconds\n", average_time);
 }
 
 /**
- * Run experiment using specified algorithm
- * @param algo_type type of algorithm to use
+ * Run experiment
  * @return elapsed time
  */
 double run_experiment() {
     srand(static_cast<unsigned> (time(0)));
     double start, finish, elapsed;
 
-    // initialise matrices
+    // initialize matrices
     double **A = initialize_matrix(true);
     double **B = initialize_matrix(true);
     double **C = initialize_matrix(false);
 
+    // perform matrix multiplication
     start = clock();
     C = matrix_multiply_parallel_optimized(A, B, C);
     finish = clock();
@@ -127,9 +119,9 @@ void free_matrix(double **matrix) {
 }
 
 /**
- * Initialise matrix 
+ * Initialize matrix 
  * @param random fill elements randomly
- * @return initialised matrix
+ * @return initialized matrix
  */
 double **initialize_matrix(bool random) {
     // allocate memory for n*n matrix
@@ -137,10 +129,10 @@ double **initialize_matrix(bool random) {
     for (int i = 0; i < n; i++)
         matrix[i] = new double[n];
 
-    // initialise matrix elements 
+    // initialize matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? (double)rand() : 0.0;
+            matrix[row][column] = random ? (double) rand() : 0.0;
         }
     }
 
@@ -148,7 +140,7 @@ double **initialize_matrix(bool random) {
 }
 
 /**
- * Optimized parallel multiply matrix A and B
+ * Optimized parallel for multiply matrix A and B
  * @param A matrix A
  * @param B matrix B
  * @param C matrix C
@@ -156,12 +148,13 @@ double **initialize_matrix(bool random) {
  */
 double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) {
     int row, column, itr;
-    double *row_A, *row_C, *row_B; // Containers for rows A, B and C
+    double *row_A, *row_C, *row_B; // containers for rows A, B and C
     double val_A;
-// declare shared and private variables for OpenMP threads
+
+    // declare shared and private variables for OpenMP threads
 #pragma omp parallel shared(A, B, C) private(row, column, itr, row_A, row_C, row_B, val_A)
     {
-// Static allocation of data to threads
+        // static allocation of data to threads
 #pragma omp for schedule(static)
         for (row = 0; row < n; row++) {
             row_A = A[row];
@@ -169,11 +162,11 @@ double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) 
             for (itr = 0; itr < n; itr++) {
                 row_B = B[itr];
                 val_A = row_A[itr];
-                // For each column of the selected row above
-                //     Add the product of the values of corresponding row element of A
-                //     with corresponding column element of B to corresponding row, column of C
+                // for each column of the selected row above,
+                // add the product of the values of corresponding row element of A,
+                // with corresponding column element of B to corresponding row, column of C
                 for (column = 0; column < n; column += 5) {
-                    // Loop unrolling
+                    // loop unrolling
                     row_C[column] += val_A * row_B[column];
                     row_C[column + 1] += val_A * row_B[column + 1];
                     row_C[column + 2] += val_A * row_B[column + 2];
@@ -183,5 +176,6 @@ double **matrix_multiply_parallel_optimized(double **A, double **B, double **C) 
             }
         }
     }
+
     return C;
 }
