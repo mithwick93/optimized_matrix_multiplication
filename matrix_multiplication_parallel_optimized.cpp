@@ -107,8 +107,6 @@ double run_experiment() {
     // calculate elapsed time
     elapsed = (finish - start) / CLOCKS_PER_SEC;
 
-//    cout << elapsed << endl;
-
     // free matrix memory
     free_matrix(A);
     free_matrix(B);
