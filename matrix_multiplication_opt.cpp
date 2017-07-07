@@ -39,16 +39,16 @@ int main(int argc, char **argv) {
         // set sample sizes according to matrix size
         switch (n) {
             case 200:
-                sample_size = 2500;
-                break;
-            case 400:
                 sample_size = 200;
                 break;
-            case 600:
+            case 400:
                 sample_size = 100;
                 break;
-            default:
+            case 600:
                 sample_size = 50;
+                break;
+            default:
+                sample_size = 20;
         }
 
         // optimised parallel
@@ -155,7 +155,7 @@ double **initialize_matrix(bool random) {
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? (double)rand() : 0.0;
+            matrix[row][column] = random ? ((double)rand()/(double)(RAND_MAX/10000)) : 0.0;
         }
     }
 

@@ -20,24 +20,41 @@ static double **matrix_multiply_parellel(double **A, double **B, double **C);
 
 
 static int n; // size of matrix 
-static int sample_size = 25; // test sample size
+static int sample_size; // test sample size
 
 /*
  * Matrix multiplication program
  */
 int main(int argc, char **argv) {
-    printf("Testing for sample size: %d\n\n", sample_size);
 
     for (int matrix_size = 200; matrix_size <= 2000; matrix_size += 200) {
         n = matrix_size;
         printf("Matrix size : %d\n--------------------\n", matrix_size);
         fflush(stdout);
 
+        // set sample sizes according to matrix size
+        switch (n) {
+            case 200:
+                sample_size = 25;
+                break;
+            case 400:
+                sample_size = 20;
+                break;
+            case 600:
+                sample_size = 15;
+                break;
+            default:
+                sample_size = 10;
+        }
+
         // serial
         get_timings(1, (char *) "Serial");
 
         // parallel
         get_timings(2, (char *) "Parallel");
+
+		printf("\n");
+        printf("Samples provided: %d\n\n", sample_size);
 
         printf("\n");
         fflush(stdout);
@@ -140,7 +157,7 @@ double **initialize_matrix(bool random) {
     // initialise matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? (double)rand() : 0.0;
+            matrix[row][column] = random ? ((double)rand()/(double)(RAND_MAX/10000)) : 0.0;
         }
     }
 

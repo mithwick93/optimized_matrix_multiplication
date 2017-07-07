@@ -132,7 +132,7 @@ double **initialize_matrix(bool random) {
     // initialize matrix elements 
     for (int row = 0; row < n; row++) {
         for (int column = 0; column < n; column++) {
-            matrix[row][column] = random ? (double) rand() : 0.0;
+            matrix[row][column] = random ? ((double)rand()/(double)(RAND_MAX/10000)) : 0.0;
         }
     }
 
